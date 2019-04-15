@@ -7,10 +7,12 @@ import * as bodyParser from "body-parser";
 import { ITodoRepository } from './repository/todo';
 import * as express from "express";
 import * as mongoose from "mongoose";
+import { config } from "dotenv";
 
 
 async function main() {
 
+  config();
   let container = new Container();
 
   container.bind<ITodoRepository>(Types.ITodoRepository).to(TodoRepositoryImpl);
@@ -22,10 +24,13 @@ async function main() {
   }));
   app.use(bodyParser.json());
 
-  await mongoose.connect('mongodb://localhost:27017/todo', {user: "root", pass: "root"});
+  await mongoose.connect(process.env.MONGODB_URL, {
+    user: process.env.MONGODB_USER, 
+    pass: process.env.MONGODB_PASS
+  });
   let graphQLServer = container.get<GraphQLServer>("GraphQLServer");
 
-  graphQLServer.run(app, 3000);
+  graphQLServer.run(app, process.env.PORT);
 
 }
 

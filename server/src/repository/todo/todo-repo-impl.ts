@@ -9,9 +9,9 @@ export class TodoRepositoryImpl implements ITodoRepository {
 
   private todoModel = new Todo().getModelForClass(Todo);
   
-  public async getTodoById(id: String): Promise<Todo> {
-    return await this.todoModel.findById(id).exec();
-  }  
+  public async getTodoById(id: string): Promise<Todo> {
+    return await this.todoModel.findOne({ id: id }).exec();
+  }
   
   public async getAllTodos(): Promise<Todo[]> {
     return await this.todoModel.find().exec();
@@ -27,6 +27,7 @@ export class TodoRepositoryImpl implements ITodoRepository {
     todo.created = new Date();
 
     return this.todoModel.create(todo);
+
   }
 
 }

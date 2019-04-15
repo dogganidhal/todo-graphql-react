@@ -25,7 +25,7 @@ export class GraphQLServer {
 
     type Query {
       todos: [Todo]!
-      todo(id: ID!): Todo
+      todo(id: String!): Todo
     }
 
     type Mutation {
@@ -38,22 +38,20 @@ export class GraphQLServer {
     return {
       Query: {
         todos: () => this.todoRepository.getAllTodos(),
-        todo: (id: string) => this.todoRepository.getTodoById(id)
+        todo: (_: null, args: { id: string }) => this.todoRepository.getTodoById(args.id)
       },
       Mutation: {
-        async createTodo(_: null, args: { title: string, content?: string }) {
-          return repository.saveTodo(args.title, args.content);
-        }
+        createTodo: (_: null, args: { title: string, content?: string }) => this.todoRepository.saveTodo(args.title, args.content)
       }
     }
   }
   
 
-  public run(app: express.Application, port: number = 3000) {
+  public run(app: express.Application, port: string = "3000") {
     let server = new ApolloServer({ typeDefs: this.typeDefs, resolvers: this.resolvers });
     server.applyMiddleware({ app: app });
     app.listen(port, () => {
-      console.log(`GraphQL Server is up and running at http://localhost:${port}${server.graphqlPath}`)
+      console.log(`GraphQL Server is up and running at ${server.graphqlPath}`)
     })
   }
 
