@@ -21,12 +21,14 @@ type Todo {
   content: String,
   created: GraphQLDateTime!
   status: TodoStatus!
+  user: User!
 }
 
 type Query {
   todos: [Todo]!
   todo(id: ID!): Todo
-  users: [User]!
+  me: User
+  login(email: String!, password: String!): String
 }
 
 type Mutation {

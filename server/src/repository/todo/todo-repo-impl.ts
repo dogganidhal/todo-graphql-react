@@ -3,12 +3,15 @@ import { ITodoRepository } from ".";
 import { Todo, TodoStatus } from "../../model/todo";
 import { injectable } from "inversify";
 import { v4 } from "uuid";
-import { TodoNotFoundException } from "../../exceptions";
+import { TodoNotFoundException, UnauthenticatedException, UnauthorizedException } from "../../exceptions";
+import { User } from "../../model/user";
+import { ObjectId } from "bson";
 
 @injectable()
 export class TodoRepositoryImpl implements ITodoRepository {
 
   private todoModel = new Todo().getModelForClass(Todo);
+  private userModel = new User().getModelForClass(User);
   
   public async getTodoById(id: string): Promise<Todo> {
 
@@ -21,30 +24,42 @@ export class TodoRepositoryImpl implements ITodoRepository {
 
   }
   
-  public async getAllTodos(): Promise<Todo[]> {
-    return await this.todoModel.find().exec();
+  public async getAllTodos(user: User): Promise<Todo[]> {
+    return await this.todoModel
+      .find({ user: user._id })
+      .populate('user')
+      .exec();
   }
 
-  public async saveTodo(title: string, content?: string): Promise<Todo> {
+  public async saveTodo(title: string, user: User, content?: string): Promise<Todo> {
 
     let todo = new Todo();
     
-    todo.id = v4();
+    todo._id = ObjectId.createFromTime(Date.now());
     todo.content = content;
     todo.title = title;
     todo.created = new Date();
     todo.status = TodoStatus.READY;
+    todo.user = user;
 
-    return this.todoModel.create(todo);
+    await this.todoModel.create(todo);
+
+    return todo;
 
   }
 
-  public async updateTodoStatus(id: string, status: TodoStatus): Promise<Todo> {
+  public async updateTodoStatus(id: string, status: TodoStatus, user: User): Promise<Todo> {
 
-    let todo = await this.todoModel.findOneAndUpdate({ id: id }, { status: status }, { new: true }).exec();
-
+    let todo = await this.todoModel.findOne({ id: id }).exec();
     if (!todo)
       throw TodoNotFoundException(id);
+    if (todo.user !== user)
+      throw UnauthorizedException;
+
+    todo.status = status;
+    await this.todoModel.update({ id: id }, todo);
+
+    todo.user = await this.userModel.findOne({ id: todo.user._id });
 
     return todo;
   }
