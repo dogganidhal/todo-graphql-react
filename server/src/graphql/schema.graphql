@@ -1,0 +1,36 @@
+scalar GraphQLDateTime
+
+enum TodoStatus {
+  READY
+  IN_PROGRESS
+  DONE
+}
+
+type User {
+  id: ID!
+  firstName: String!
+  lastName: String!
+  email: String!
+  passwordHash: String!
+  created: GraphQLDateTime!
+}
+
+type Todo {
+  id: ID!
+  title: String!,
+  content: String,
+  created: GraphQLDateTime!
+  status: TodoStatus!
+}
+
+type Query {
+  todos: [Todo]!
+  todo(id: ID!): Todo
+  users: [User]!
+}
+
+type Mutation {
+  createUser(firstName: String!, lastName: String!, email: String!, password: String!): User
+  createTodo(title: String!, content: String): Todo!
+  updateTodoStatus(id: ID!, status: TodoStatus!): Todo
+}

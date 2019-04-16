@@ -10,6 +10,8 @@ import * as mongoose from "mongoose";
 import { config } from "dotenv";
 import { IUserRepository } from './repository/user';
 import { UserRepositoryImpl } from './repository/user/user-repo-impl';
+import { TodoResolver } from './graphql/resolvers/todo-resolver';
+import { UserResolver } from './graphql/resolvers/user-resolver';
 
 
 async function main() {
@@ -19,6 +21,8 @@ async function main() {
 
   container.bind<ITodoRepository>(Types.ITodoRepository).to(TodoRepositoryImpl);
   container.bind<IUserRepository>(Types.IUserRepository).to(UserRepositoryImpl);
+  container.bind<TodoResolver>(Types.ITodoResolver).to(TodoResolver);
+  container.bind<UserResolver>(Types.IUserResolver).to(UserResolver);
   container.bind<GraphQLServer>("GraphQLServer").to(GraphQLServer);
 
   let app = express();
